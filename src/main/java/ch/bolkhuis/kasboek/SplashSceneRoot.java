@@ -18,8 +18,7 @@ package ch.bolkhuis.kasboek;
 
 import ch.bolkhuis.kasboek.components.LedgerFileListView;
 import ch.bolkhuis.kasboek.components.RecentLedgerFile;
-import ch.bolkhuis.kasboek.core.*;
-import javafx.collections.FXCollections;
+import ch.bolkhuis.kasboek.core.HuischLedger;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -33,35 +32,28 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
-import org.controlsfx.control.*;
-import java.awt.Desktop;
+import org.controlsfx.control.HyperlinkLabel;
+import org.jetbrains.annotations.NotNull;
 
+import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.prefs.Preferences;
 
 public class SplashSceneRoot extends BorderPane {
     private static final double WIDTH = 840;
     private static final double HEIGHT = 484;
 
-    private final Image logo;
-    private final App app;
+    private Image logo;
+    private App app;
 
     /**
      * Creates a new Splash Scene Root with the supplied Image as logo.
      */
-    public SplashSceneRoot(App app, Image logo) {
-        if (app == null) { throw new NullPointerException(); }
-        if (logo == null) { throw new NullPointerException(); }
-
-        this.app = app;
-        this.logo = logo;
+    public SplashSceneRoot(@NotNull App app, @NotNull Image logo) {
+        this.app = Objects.requireNonNull(app);
+        this.logo = Objects.requireNonNull(logo);
 
         setId("SplashSceneRoot");
         initAppearance();
@@ -70,9 +62,10 @@ public class SplashSceneRoot extends BorderPane {
 
     /**
      * Sets all properties for the visual appearance of this SplashSceneRoot.
+     *
+     * This scene uses a fixed size
      */
     private void initAppearance() {
-        // Use a fixed size
         setMinSize(WIDTH, HEIGHT);
         setPrefSize(WIDTH, HEIGHT);
         setMaxSize(WIDTH, HEIGHT);
@@ -84,69 +77,59 @@ public class SplashSceneRoot extends BorderPane {
     private void createAndSetChildren() {
         // Recent opened Ledgers
         ObservableList<RecentLedgerFile> recentLedgerFiles = app.getRecentLedgerFiles();
-//        List<RecentLedgerFile> recentLedgerFiles = loadRecentLedgers();
-//        // FIXME implement the actual loading of recent Ledger files
-//        recentLedgerFiles = new ArrayList<>(List.of(
-//                new RecentLedgerFile(new File("~/nonexistant"), "Placeholder for Ledger"),
-//                new RecentLedgerFile(new File("~/some/file.hlf"), "Official Ledger ofc")
-//        ));
 
         // create and set the main menu
         GridPane centerGrid = new GridPane();
         centerGrid.setId("centerGrid");
-//        centerGrid.setGridLinesVisible(true); // Use this for debugging the layout of the GridPane
         centerGrid.setAlignment(Pos.CENTER);
 
-        // imageView for the Huisch logo. Use a BorderPane for centering the ImageView
         BorderPane imageBorderPane = new BorderPane();
         ImageView imageView = new ImageView(logo);
         imageView.setPreserveRatio(true);
         imageView.setFitWidth(180);
         imageBorderPane.setCenter(imageView);
         centerGrid.add(imageBorderPane, 0, 0);
-        // title
         Label title = new Label("Huisch Kasboek");
         title.setId("splashTitle");
         centerGrid.add(title, 0, 1);
 
-        // Add buttons for creating of importing a Ledger or for getting help
         Button newLedgerButton = new Button("Nieuw Kasboek", new ImageView("plus-sign-16.png"));
         newLedgerButton.setOnAction(event -> {
             app.changeToApplicationScene(new ApplicationSceneRoot(app, new HuischLedger(), null));
         });
+
         Button importLedgerButton = new Button("Importeer Kasboek", new ImageView("import-16.png"));
         importLedgerButton.setOnAction(new ImportLedgerEventHandler());
+
         Button getHelpButton = new Button("Krijg hulp", new ImageView("question-mark-16.png"));
+
         centerGrid.add(newLedgerButton, 0, 2);
         centerGrid.add(importLedgerButton, 0, 3);
         centerGrid.add(getHelpButton, 0, 4);
 
         setCenter(centerGrid);
 
-        // Initial width for the centerGrid
         centerGrid.setMinSize(WIDTH, HEIGHT);
         centerGrid.setPrefSize(WIDTH, HEIGHT);
         centerGrid.setMaxSize(WIDTH, HEIGHT);
-        if (recentLedgerFiles.size() > 0) {
-            // Set a list of RecentLedgerFiles on the Left side of this BorderPane
-            LedgerFileListView ledgerFileListView = new LedgerFileListView(app, recentLedgerFiles);
-            ledgerFileListView.setFocusTraversable(false); // We only want TAB to be used for the menu in the center
 
-            // Set a fixed width of a third of the total width
-            ledgerFileListView.setMinSize(WIDTH / 3.0, HEIGHT);
-            ledgerFileListView.setPrefSize(WIDTH / 3.0, HEIGHT);
-            ledgerFileListView.setMaxSize(WIDTH / 3.0, HEIGHT);
+        // Set a list of RecentLedgerFiles on the Left side of this BorderPane
+        LedgerFileListView ledgerFileListView = new LedgerFileListView(app, recentLedgerFiles);
+        ledgerFileListView.setFocusTraversable(false); // We only want TAB to be used for the menu in the center
 
-            setLeft(ledgerFileListView);
+        // Set a fixed width of a third of the total width
+        ledgerFileListView.setMinSize(WIDTH / 3.0, HEIGHT);
+        ledgerFileListView.setPrefSize(WIDTH / 3.0, HEIGHT);
+        ledgerFileListView.setMaxSize(WIDTH / 3.0, HEIGHT);
 
-            // Adjust the centerGrid's width
-            double newWidth = WIDTH / 3.0 * 2;
-            centerGrid.setMinWidth(newWidth);
-            centerGrid.setPrefWidth(newWidth);
-            centerGrid.setMaxWidth(newWidth);
-        }
+        setLeft(ledgerFileListView);
 
-        // Add a creator notice. Please do not edit this notice
+        // Update the centerGrid's width
+        double newWidth = WIDTH / 3.0 * 2;
+        centerGrid.setMinWidth(newWidth);
+        centerGrid.setPrefWidth(newWidth);
+        centerGrid.setMaxWidth(newWidth);
+
         HyperlinkLabel creatorNotice = new HyperlinkLabel("Gemaakt door [Aron Hoogeveen]");
         creatorNotice.setOnMouseClicked(event -> {
             try {
@@ -163,12 +146,6 @@ public class SplashSceneRoot extends BorderPane {
 
     private class ImportLedgerEventHandler implements EventHandler<ActionEvent> {
 
-        /**
-         * Invoked when a specific event of the type for which this handler is
-         * registered happens.
-         *
-         * @param event the event which occurred
-         */
         @Override
         public void handle(ActionEvent event) {
             FileChooser fileChooser = new FileChooser();
