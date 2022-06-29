@@ -1,0 +1,21 @@
+.root {
+    -fx-font-size: 14px;
+    -fx-base: aliceblue;
+    -fx-background-color: aliceblue;
+    -fx-vgap: 10;
+    -fx-hgap: 10;
+}
+
+#huischText {
+    -fx-font-size: 64px;
+    -fx-font-family: "Roboto Light";
+    -fx-effect: dropshadow(gaussian, black, 20, 0, 4, 4);
+    -fx-fill: forestgreen;
+    -fx-text-alignment: center;
+}
+
+/* fix some of the unreadable text of disabled components */
+/*.combo-box:disabled, .combo-box:disabled > *,*/
+*:disabled {
+    -fx-opacity: 0.7; /* a much more readable opacity */
+}
