@@ -21,9 +21,19 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * The immutable class Ledger contains a collection of processed and unprocessed Transactions as well as a collection
@@ -47,20 +57,6 @@ public class Ledger {
         this.accountingEntities = FXCollections.observableHashMap();
         this.nextTransactionId = 0;
         this.nextAccountingEntityId = 0;
-    }
-
-    /**
-     * Creates a new Ledger that is equal to the {@code old} Ledger.
-     *
-     * @see Ledger#equals(Object)
-     */
-    public Ledger(@NotNull Ledger old) {
-        Objects.requireNonNull(old);
-
-        this.accountingEntities = old.accountingEntities;
-        this.transactions = old.transactions;
-        this.nextTransactionId = old.nextTransactionId;
-        this.nextAccountingEntityId = old.nextAccountingEntityId;
     }
 
     /**
@@ -328,10 +324,11 @@ public class Ledger {
 
     /**
      * Returns a deep copy of {@code accountingEntries}. This method is linear time.
-     * @return new {@link SortedMap}
+     * @return copy
      * @deprecated
      */
-    public @Deprecated TreeMap<Integer, AccountingEntity> copyOfAccountingEntities() {
+    public @Deprecated
+    TreeMap<Integer, AccountingEntity> copyOfAccountingEntities() {
         return new TreeMap<>(accountingEntities);
     }
 
